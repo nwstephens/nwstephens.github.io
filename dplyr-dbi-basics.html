@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="BÁRBARA BORGES RIBEIRO" />
+
+
+<title>Database basics - dplyr and DBI</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-1.1/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+
+
+<div class="navbar navbar-inverse  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">db.rstudio.com</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    Using
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="dplyr-dbi-basics.html">Basic</a>
+    </li>
+    <li>
+      <a href="advanced.html">Advanced</a>
+    </li>
+    <li>
+      <a href="best-practices.html">Best Practices</a>
+    </li>
+  </ul>
+</li>
+<li>
+  <a href="packages.html">Connecting</a>
+</li>
+<li>
+  <a href="odbc.html">odbc</a>
+</li>
+<li>
+  <a href="security.html">Security</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+    References
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="odbc-reference.html">odbc</a>
+    </li>
+    <li>
+      <a href="DBI.html">DBI</a>
+    </li>
+    <li>
+      <a href="keychain.html">Keychain</a>
+    </li>
+  </ul>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Database basics - dplyr and DBI</h1>
+<h4 class="author"><em>BÁRBARA BORGES RIBEIRO</em></h4>
+
+</div>
+
+
+<p><strong>INSTALLATION NOTE:</strong> Make sure you have the most current development version of both the pool and the shiny packages:</p>
+<pre class="r"><code>devtools::install_github(&quot;rstudio/pool&quot;)
+devtools::install_github(&quot;rstudio/shiny&quot;)</code></pre>
+<div id="overview" class="section level2">
+<h2>Overview</h2>
+<p>As Shiny apps grow and become more complex, a recurring issue has been that of integrating an external database into an app. While this is already possible, so far it’s been mostly up to the app authors to figure out the appropriate database driver for R and how to manage the database connections within the app itself. The goal of this series of articles is to demystify this process and to introduce some brand new features that should make it easier.</p>
+<p>In particular, we will cover:</p>
+<ul>
+<li><p>how to use the dplyr package to read data from an external database;</p></li>
+<li><p>how to use the DBI package to hook up to an external database;</p></li>
+<li><p>how to prevent SQL injections;</p></li>
+<li><p>how to manage connections, prevent leaks and ensure the best performance using the pool package;</p></li>
+<li><p>how to integrate the pool package with dplyr.</p></li>
+</ul>
+<p>Note that it isn’t always ideal to link up to an external database, as it may break and it is certainly more computationally expensive than dealing with local data. To quote Hadley on when to use dplyr with databases vs in-memory data:</p>
+<p><em>Generally, if your data fits in memory there is no advantage to putting it in a database: it will only be slower and more hassle. The reason you’d want to use dplyr with a database is because either your data is already in a database (and you don’t want to work with static csv files that someone else has dumped out for you), or you have so much data that it does not fit in memory and you have to use a database. </em></p>
+<p>It is, however, outside of the scope of these articles to explain further when you do need to connect to a database; we will just assume that you’ve thought through your options and concluded that this is the best way to go.</p>
+<p>Finally, this series will only cover relational databases – in particular, relational databases whose drivers are DBI-compliant (which means that the R interface must have followed these steps these steps): SQLite, MySQL and PostgreSQL.</p>
+<p>dplyr package The easiest way to hook up to an external database from within your Shiny app is to use dplyr. The dplyr package is a very popular data manipulation package that aims to provide a function for each basic verb of data manipulation:</p>
+<ul>
+<li>filter() (and slice())</li>
+<li>arrange()</li>
+<li>select() (and rename())</li>
+<li>distinct()</li>
+<li>mutate() (and transmute())</li>
+<li>summarise()</li>
+<li>sample_n() (and sample_frac())</li>
+</ul>
+<p>If you’re not familiar with the basics of dplyr (how to apply these verbs to data frames in local storage), you should take the time to do so through this introductory vignette). But in addition to in-memory data, dplyr also works with remote databases. And by translating your R code into the appropriate SQL, it allows you to work with both types of data using the same set of tools (which can be especially useful if you’re not familiar with SQL). Hadley has written a vignette that explains in detail how to use dplyr in relation to databases. You should really check that out if you want a more comprehensive overview of this subject (in here, we will just provide a brief example). Here’s an excerpt about the rationale to support databases in dplyr:</p>
+<p><em>The motivation for supporting databases in dplyr is that you never pull down the right subset or aggregate from the database the first time, and usually you have to iterate between R and SQL many times before you get the perfect dataset. Switching between languages is cognitively challenging (especially because R and SQL are so perilously similar), so dplyr allows you to write R code that is automatically translated to SQL. The goal of dplyr is not to replace every SQL function with an R function: that would be difficult and error prone. Instead, dplyr only generates SELECT statements, the SQL you write most often as an analyst.</em></p>
+<p>Sample usage</p>
+<p>Here’s how to read the first five rows of a table from a remote database:</p>
+<pre class="r"><code>library(dplyr)
+my_db &lt;- src_mysql(
+  dbname = &quot;shinydemo&quot;,
+  host = &quot;shiny-demo.csa7qlmguqrf.us-east-1.rds.amazonaws.com&quot;,
+  user = &quot;guest&quot;,
+  password = &quot;guest&quot;
+)
+# get the first 5 rows:
+my_db %&gt;% tbl(&quot;City&quot;) %&gt;% head(5)
+##   ID           Name CountryCode      District Population
+## 1  1          Kabul         AFG         Kabol    1780000
+## 2  2       Qandahar         AFG      Qandahar     237500
+## 3  3          Herat         AFG         Herat     186800
+## 4  4 Mazar-e-Sharif         AFG         Balkh     127800
+## 5  5      Amsterdam         NLD Noord-Holland     731200</code></pre>
+<p>As you can see, it’s pretty straightforward. With very few changes, you can make this more efficient, and behave a lot better within a Shiny app, if you combine it with the pool package (see this article on the subject). But to do so, you must understand the general idea behind pooling connections, so make sure you check this article about pool basics first.</p>
+<p>Note</p>
+<p>Throughout this series of articles, all the examples provided will use the “shinydemo” toy database above (a MariaDB – which is just a MySQL fork – database, hosted on Amazon Web Services). This was created especially for learning purposes and you should feel free to play with it using the guest credentials above (these will allow you to read whatever you want from the table, but you obviously won’t be able to write into it or modify it in any way). The “shinydemo” database is simply the well-known “world” database, available for download from here. Some general info:</p>
+<p>The data set is available as a set of three tables:</p>
+<ul>
+<li>Country: Information about countries of the world.</li>
+<li>City: Information about some of the cities in those countries.</li>
+<li>CountryLanguage: Languages spoken in each country.</li>
+</ul>
+<p>Note: The Country table was modified to remove all rows that contained non-ASCII characters, so its total number of rows (3427) is smaller than the original (4079). This is to ensure that you can access the entire table without running into encoding problems, given that the default encoding is different depending on the platform you’re using (Unix or Windows), which can be an issue for non-ASCII characters. The other two tables were left unchanged.</p>
+</div>
+<div id="dbi-package" class="section level2">
+<h2>DBI package</h2>
+<p>If you need to do anything more elaborate than fairly simple SELECT queries, dplyr won’t be able to help you. In that case, we heartily recommend that you use DBI to connect to your database if there is a suitable driver. Here’s a tidbit about DBI from its github page:</p>
+<p><em>The DBI package defines a common interface between the R and database management systems (DBMS). The interface defines a small set of classes and methods similar in spirit to Perl’s DBI, Java’s JDBC, Python’s DB-API, and Microsoft’s ODBC. It defines a set of classes and methods defines what operations are possible and how they are performed</em>:</p>
+<ul>
+<li>connect/disconnect to the DBMS</li>
+<li>create and execute statements in the DBMS</li>
+<li>extract results/output from statements</li>
+<li>error/exception handling</li>
+<li>information (meta-data) from database objects</li>
+<li>transaction management (optional)</li>
+</ul>
+<p>Here’s a basic usage example that highlights some of the most common DBI capabilities – we establish a connection to a database, query it, fetch the result set, close the result set and disconnect when we’re done:</p>
+<pre class="r"><code>library(DBI)
+conn &lt;- dbConnect(
+    drv = RMySQL::MySQL(),
+    dbname = &quot;shinydemo&quot;,
+    host = &quot;shiny-demo.csa7qlmguqrf.us-east-1.rds.amazonaws.com&quot;,
+    username = &quot;guest&quot;,
+    password = &quot;guest&quot;)
+rs &lt;- dbSendQuery(conn, &quot;SELECT * FROM City LIMIT 5;&quot;)
+dbFetch(rs)
+##   ID           Name CountryCode      District Population
+## 1  1          Kabul         AFG         Kabol    1780000
+## 2  2       Qandahar         AFG      Qandahar     237500
+## 3  3          Herat         AFG         Herat     186800
+## 4  4 Mazar-e-Sharif         AFG         Balkh     127800
+## 5  5      Amsterdam         NLD Noord-Holland     731200
+dbClearResult(rs)
+dbDisconnect(conn)</code></pre>
+</div>
+<div id="dbgetquery" class="section level2">
+<h2>dbGetQuery</h2>
+<p>In the example above, we use DBI to query the database and retrieve the first 5 rows from the City table. As you can see, there is some boilerplate required by DBI: every connection you create using dbConnect() must at some point be destroyed using dbDisconnect() (or you’ll get a leaked connection, which will slow everything down unnecessarily). If you use dbSendQuery(), this will return a result set, here named rs, that stays open (so that you can gradually fetch data using dbFetch()) until you close it using dbClearResult(rs). In this particular case, since you’re fetching the data all at once (5 rows of data fit comfortably in R memory), you could actually achieve the same result in an easier way:</p>
+<pre class="r"><code>library(DBI)
+conn &lt;- dbConnect(
+    drv = RMySQL::MySQL(),
+    dbname = &quot;shinydemo&quot;,
+    host = &quot;shiny-demo.csa7qlmguqrf.us-east-1.rds.amazonaws.com&quot;,
+    username = &quot;guest&quot;,
+    password = &quot;guest&quot;)
+dbGetQuery(conn, &quot;SELECT * FROM City LIMIT 5;&quot;)
+##   ID           Name CountryCode      District Population
+## 1  1          Kabul         AFG         Kabol    1780000
+## 2  2       Qandahar         AFG      Qandahar     237500
+## 3  3          Herat         AFG         Herat     186800
+## 4  4 Mazar-e-Sharif         AFG         Balkh     127800
+## 5  5      Amsterdam         NLD Noord-Holland     731200
+dbDisconnect(conn)</code></pre>
+<p>The dbGetQuery() function basically calls dbSendQuery(), dbFetch() and dbClearResult() for you, so it makes your code a lot simpler. However, your query may be a lot bigger than 5 rows, so this is not always feasible. You may also have noticed that it can take a bit of time for the connection to be established (the second line of code). If you’re unfamiliar with DBI, it may be a good idea to explore some its additional functionality. That notwithstanding, just knowing the commands above (along with how to construct SQL queries) is enough to get you using DBI.</p>
+<p>Here’s a very simple Shiny app that does exactly what is demoed above, but allows the user to specify how many rows they want to fetch:</p>
+<pre class="r"><code>library(shiny)
+library(DBI)
+
+ui &lt;- fluidPage(
+  numericInput(&quot;nrows&quot;, &quot;Enter the number of rows to display:&quot;, 5),
+  tableOutput(&quot;tbl&quot;)
+)
+
+server &lt;- function(input, output, session) {
+  output$tbl &lt;- renderTable({
+    conn &lt;- dbConnect(
+      drv = RMySQL::MySQL(),
+      dbname = &quot;shinydemo&quot;,
+      host = &quot;shiny-demo.csa7qlmguqrf.us-east-1.rds.amazonaws.com&quot;,
+      username = &quot;guest&quot;,
+      password = &quot;guest&quot;)
+    on.exit(dbDisconnect(conn), add = TRUE)
+    dbGetQuery(conn, paste0(
+      &quot;SELECT * FROM City LIMIT &quot;, input$nrows, &quot;;&quot;))
+  })
+}
+
+shinyApp(ui, server)</code></pre>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
